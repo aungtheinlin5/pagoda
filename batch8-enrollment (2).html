@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Android Dev Course — Batch 8</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Rajdhani:wght@400;500;600;700&family=Noto+Sans+Myanmar:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #0f1628;
+    --card: #141c35;
+    --border: #1e2d54;
+    --accent: #00d4ff;
+    --accent2: #3dff8f;
+    --accent3: #ff6b35;
+    --text: #e8eeff;
+    --muted: #6b7db3;
+    --android-green: #3ddc84;
+    --error: #ff4d6d;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Animated grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: gridMove 20s linear infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @keyframes gridMove {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(40px); }
+  }
+
+  /* Floating orbs */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: 0;
+    animation: float 8s ease-in-out infinite;
+  }
+  .orb1 { width: 400px; height: 400px; background: var(--accent); top: -100px; right: -100px; animation-delay: 0s; }
+  .orb2 { width: 300px; height: 300px; background: var(--android-green); bottom: 100px; left: -80px; animation-delay: 3s; }
+  .orb3 { width: 200px; height: 200px; background: var(--accent3); top: 50%; left: 50%; animation-delay: 6s; }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) scale(1); }
+    50% { transform: translateY(-30px) scale(1.05); }
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+    animation: slideDown 0.8s ease both;
+  }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(61,220,132,0.1);
+    border: 1px solid rgba(61,220,132,0.3);
+    border-radius: 100px;
+    padding: 6px 16px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--android-green);
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+  }
+
+  .badge::before {
+    content: '';
+    width: 8px; height: 8px;
+    background: var(--android-green);
+    border-radius: 50%;
+    animation: pulse 1.5s ease infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  .android-logo {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    display: block;
+    animation: rotatePop 1s cubic-bezier(.34,1.56,.64,1) 0.3s both;
+  }
+
+  @keyframes rotatePop {
+    from { opacity: 0; transform: scale(0) rotate(-180deg); }
+    to { opacity: 1; transform: scale(1) rotate(0deg); }
+  }
+
+  .course-title {
+    font-family: 'Space Mono', monospace;
+    font-size: clamp(26px, 5vw, 40px);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -1px;
+    margin-bottom: 12px;
+  }
+
+  .course-title span {
+    background: linear-gradient(135deg, var(--accent), var(--android-green));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    font-size: 16px;
+    color: var(--muted);
+    font-family: 'Noto Sans Myanmar', sans-serif;
+    font-weight: 400;
+  }
+
+  /* Stats bar */
+  .stats {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    margin: 28px 0 0;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    animation: slideDown 0.8s ease 0.2s both;
+  }
+
+  .stat {
+    flex: 1;
+    padding: 14px 12px;
+    text-align: center;
+    border-right: 1px solid var(--border);
+    position: relative;
+  }
+  .stat:last-child { border-right: none; }
+
+  .stat-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 2px;
+    font-family: 'Noto Sans Myanmar', sans-serif;
+  }
+
+  /* Form card */
+  .form-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 40px 36px;
+    position: relative;
+    overflow: hidden;
+    animation: slideUp 0.8s ease 0.3s both;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .form-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--android-green), var(--accent3));
+    border-radius: 24px 24px 0 0;
+  }
+
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Form groups */
+  .form-group {
+    margin-bottom: 22px;
+    position: relative;
+  }
+
+  .form-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+
+  .label-icon {
+    width: 18px;
+    height: 18px;
+    opacity: 0.7;
+  }
+
+  .form-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    outline: none;
+    transition: all 0.3s ease;
+    appearance: none;
+  }
+
+  .form-input:focus {
+    border-color: var(--accent);
+    background: rgba(0,212,255,0.04);
+    box-shadow: 0 0 0 3px rgba(0,212,255,0.1);
+  }
+
+  .form-input::placeholder { color: var(--muted); opacity: 0.5; font-size: 15px; }
+
+  /* Payment section */
+  .payment-section {
+    margin-bottom: 22px;
+  }
+
+  .payment-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .payment-card {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .payment-card:hover {
+    border-color: var(--muted);
+    transform: translateY(-2px);
+  }
+
+  .payment-card.selected {
+    border-color: var(--accent);
+    background: rgba(0,212,255,0.06);
+    box-shadow: 0 0 0 1px rgba(0,212,255,0.2), inset 0 0 20px rgba(0,212,255,0.03);
+  }
+
+  .payment-card.selected .pay-check {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .payment-card input[type="radio"] { display: none; }
+
+  .pay-check {
+    position: absolute;
+    top: 10px; right: 10px;
+    width: 20px; height: 20px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+  }
+
+  .pay-check::after {
+    content: '✓';
+    color: #000;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .pay-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 8px;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+  }
+
+  .kbz .pay-badge {
+    background: linear-gradient(135deg, #e8a020, #f5c842);
+    color: #1a0800;
+  }
+
+  .wave .pay-badge {
+    background: linear-gradient(135deg, #c0006e, #e03c8a);
+    color: #fff;
+  }
+
+  .pay-number {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 3px;
+  }
+
+  .pay-name {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'Noto Sans Myanmar', sans-serif;
+  }
+
+  /* File upload */
+  .upload-zone {
+    background: var(--surface);
+    border: 2px dashed var(--border);
+    border-radius: 14px;
+    padding: 32px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--accent);
+    background: rgba(0,212,255,0.04);
+  }
+
+  .upload-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  .upload-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 12px;
+    color: var(--muted);
+  }
+
+  .upload-text {
+    font-size: 15px;
+    color: var(--muted);
+    font-family: 'Noto Sans Myanmar', sans-serif;
+  }
+
+  .upload-text strong {
+    color: var(--accent);
+    display: block;
+    margin-bottom: 4px;
+    font-size: 16px;
+  }
+
+  .upload-preview {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .upload-preview img {
+    max-height: 150px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+
+  .upload-preview .file-name {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--accent2);
+  }
+
+  /* Submit button */
+  .submit-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--accent), #0099cc);
+    color: #000;
+    border: none;
+    border-radius: 14px;
+    padding: 18px;
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+
+  .submit-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--android-green), #00aa66);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,212,255,0.4); }
+  .submit-btn:hover::before { opacity: 1; }
+  .submit-btn:active { transform: translateY(0); }
+  .submit-btn span { position: relative; z-index: 1; }
+
+  .submit-btn.loading {
+    pointer-events: none;
+    opacity: 0.8;
+  }
+
+  /* Error */
+  .field-error {
+    font-size: 12px;
+    color: var(--error);
+    font-family: 'Space Mono', monospace;
+    margin-top: 6px;
+    display: none;
+  }
+
+  .field-error.show { display: block; }
+  .form-input.error { border-color: var(--error); }
+
+  /* Success screen */
+  .success-screen {
+    display: none;
+    text-align: center;
+    padding: 60px 20px;
+    animation: popIn 0.5s cubic-bezier(.34,1.56,.64,1) both;
+  }
+
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .success-icon {
+    width: 90px;
+    height: 90px;
+    background: linear-gradient(135deg, var(--android-green), #00aa66);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    margin: 0 auto 24px;
+    box-shadow: 0 0 60px rgba(61,255,143,0.3);
+  }
+
+  .success-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--android-green);
+    margin-bottom: 12px;
+  }
+
+  .success-msg {
+    font-size: 16px;
+    color: var(--muted);
+    font-family: 'Noto Sans Myanmar', sans-serif;
+    line-height: 1.6;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 24px;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    z-index: 999;
+    transition: transform 0.4s cubic-bezier(.34,1.56,.64,1);
+    white-space: nowrap;
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.error-toast { border-color: var(--error); color: var(--error); }
+  .toast.success-toast { border-color: var(--android-green); color: var(--android-green); }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 28px 0;
+  }
+
+  @media (max-width: 520px) {
+    .form-card { padding: 28px 20px; }
+    .payment-options { grid-template-columns: 1fr; }
+    .stats { flex-wrap: wrap; }
+    .stat { min-width: 50%; border-bottom: 1px solid var(--border); }
+    .stat:nth-child(2) { border-right: none; }
+    .stat:nth-child(3), .stat:nth-child(4) { border-bottom: none; }
+    .stat:nth-child(3) { border-right: 1px solid var(--border); }
+  }
+</style>
+</head>
+<body>
+
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+
+<div class="wrapper">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="badge">Enrollment Open</div>
+
+    <!-- Android SVG Logo -->
+    <svg class="android-logo" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="40" cy="40" r="38" fill="rgba(61,220,132,0.1)" stroke="rgba(61,220,132,0.3)" stroke-width="1"/>
+      <g transform="translate(15, 14)">
+        <!-- Antenna left -->
+        <line x1="15" y1="8" x2="8" y2="2" stroke="#3ddc84" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="7" cy="1.5" r="2" fill="#3ddc84"/>
+        <!-- Antenna right -->
+        <line x1="35" y1="8" x2="42" y2="2" stroke="#3ddc84" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="43" cy="1.5" r="2" fill="#3ddc84"/>
+        <!-- Head -->
+        <path d="M5 20 Q5 10 25 10 Q45 10 45 20" fill="#3ddc84"/>
+        <!-- Eyes -->
+        <circle cx="17" cy="16" r="2.5" fill="#0a0e1a"/>
+        <circle cx="33" cy="16" r="2.5" fill="#0a0e1a"/>
+        <!-- Body -->
+        <rect x="2" y="22" width="46" height="26" rx="4" fill="#3ddc84"/>
+        <!-- Left arm -->
+        <rect x="-5" y="22" width="6" height="18" rx="3" fill="#3ddc84"/>
+        <!-- Right arm -->
+        <rect x="49" y="22" width="6" height="18" rx="3" fill="#3ddc84"/>
+        <!-- Legs -->
+        <rect x="9" y="49" width="10" height="14" rx="3" fill="#3ddc84"/>
+        <rect x="31" y="49" width="10" height="14" rx="3" fill="#3ddc84"/>
+        <!-- Screen lines -->
+        <line x1="12" y1="30" x2="38" y2="30" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/>
+        <line x1="12" y1="36" x2="30" y2="36" stroke="rgba(255,255,255,0.2)" stroke-width="2" stroke-linecap="round"/>
+      </g>
+    </svg>
+
+    <div class="course-title">
+      Android Dev<br><span>Batch — 08</span>
+    </div>
+    <div class="subtitle">သင်တန်းဝင်ခွင့် လျှောက်လွှာ</div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-num">08</div>
+        <div class="stat-label">Batch</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" style="color:var(--android-green);font-size:14px">Telegram Group</div>
+        <div class="stat-label">Platform</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" style="color:var(--accent3)">Pro</div>
+        <div class="stat-label">Level</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">Online</div>
+        <div class="stat-label">မုဒ်</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Card -->
+  <div class="form-card" id="formCard">
+
+    <div class="section-label">Personal Info</div>
+
+    <!-- Name -->
+    <div class="form-group">
+      <label class="form-label">
+        <svg class="label-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        အမည်
+      </label>
+      <input class="form-input" type="text" id="name" placeholder="ကိုယ့်အမည်ရိုက်ထည့်ပါ" autocomplete="name">
+      <div class="field-error" id="nameErr">အမည် ဖြည့်ပေးပါ</div>
+    </div>
+
+    <!-- Phone -->
+    <div class="form-group">
+      <label class="form-label">
+        <svg class="label-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 11.9 19.79 19.79 0 0 1 1.61 3.27 2 2 0 0 1 3.6 1.06h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        Phone Number
+      </label>
+      <input class="form-input" type="tel" id="phone" placeholder="09xxxxxxxxx" autocomplete="tel">
+      <div class="field-error" id="phoneErr">Phone Number ဖြည့်ပေးပါ</div>
+    </div>
+
+    <!-- Telegram -->
+    <div class="form-group">
+      <label class="form-label">
+        <svg class="label-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Telegram Username
+      </label>
+      <input class="form-input" type="text" id="telegram" placeholder="@username" autocomplete="off">
+      <div class="field-error" id="telegramErr">Telegram Username ဖြည့်ပေးပါ</div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-label">Payment</div>
+
+    <!-- Payment Method -->
+    <div class="payment-section">
+      <label class="form-label" style="margin-bottom:14px">
+        <svg class="label-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        ငွေပေးချေမှု နည်းလမ်း
+      </label>
+      <div class="payment-options">
+        <div class="payment-card kbz" id="kbzCard" onclick="selectPayment('kbz')">
+          <input type="radio" name="payment" value="kbz" id="kbz">
+          <div class="pay-check"></div>
+          <div class="pay-badge">KBZ Pay</div>
+          <div class="pay-number">09453301116</div>
+          <div class="pay-name">Daw Moe Kyi</div>
+        </div>
+        <div class="payment-card wave" id="waveCard" onclick="selectPayment('wave')">
+          <input type="radio" name="payment" value="wave" id="wave">
+          <div class="pay-check"></div>
+          <div class="pay-badge">Wave Pay</div>
+          <div class="pay-number">09453301116</div>
+          <div class="pay-name">Aung Thein Lin</div>
+        </div>
+      </div>
+      <div class="field-error" id="paymentErr">ငွေပေးချေမှု နည်းလမ်း ရွေးချယ်ပေးပါ</div>
+    </div>
+
+    <!-- Screenshot Upload -->
+    <div class="form-group">
+      <label class="form-label">
+        <svg class="label-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        Payment Screenshot
+      </label>
+      <div class="upload-zone" id="uploadZone">
+        <input type="file" id="screenshot" accept="image/*" onchange="handleFile(event)">
+        <div id="uploadDefault">
+          <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+          <div class="upload-text">
+            <strong>Screenshot တင်ပေးပါ</strong>
+            ငွေလွှဲပြီးနောက် Screenshot ကို ဒီနေရာမှာ Upload လုပ်ပေးပါ
+          </div>
+        </div>
+        <div class="upload-preview" id="uploadPreview">
+          <img id="previewImg" src="" alt="preview">
+          <div class="file-name" id="fileName"></div>
+        </div>
+      </div>
+      <div class="field-error" id="screenshotErr">Payment Screenshot တင်ပေးပါ</div>
+    </div>
+
+    <button class="submit-btn" onclick="submitForm()" id="submitBtn">
+      <span id="btnText">📤 &nbsp; လျှောက်လွှာတင်မည်</span>
+    </button>
+
+    <!-- Success screen (inside card) -->
+    <div class="success-screen" id="successScreen">
+      <div class="success-icon">✅</div>
+      <div class="success-title">တင်ပြီးပါပြီ!</div>
+      <div class="success-msg">
+        သင်၏ လျှောက်လွှာကို အောင်မြင်စွာ တင်ပြခဲ့ပါပြီ။<br>
+        မကြာမီ ဆက်သွယ်ပေးပါမည်။ ကျေးဇူးတင်ပါသည်! 🙏
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  let selectedPayment = '';
+  let screenshotFile = null;
+
+  function selectPayment(type) {
+    selectedPayment = type;
+    document.getElementById('kbzCard').classList.remove('selected');
+    document.getElementById('waveCard').classList.remove('selected');
+    document.getElementById(type + 'Card').classList.add('selected');
+    document.getElementById(type).checked = true;
+    document.getElementById('paymentErr').classList.remove('show');
+  }
+
+  function handleFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    screenshotFile = file;
+
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      document.getElementById('previewImg').src = ev.target.result;
+      document.getElementById('fileName').textContent = file.name;
+      document.getElementById('uploadDefault').style.display = 'none';
+      const prev = document.getElementById('uploadPreview');
+      prev.style.display = 'flex';
+    };
+    reader.readAsDataURL(file);
+    document.getElementById('screenshotErr').classList.remove('show');
+  }
+
+  // Drag and drop
+  const zone = document.getElementById('uploadZone');
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      document.getElementById('screenshot').files = e.dataTransfer.files;
+      handleFile({ target: { files: [file] } });
+    }
+  });
+
+  function showToast(msg, type) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast ' + type + '-toast';
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  function validate() {
+    let ok = true;
+    const name = document.getElementById('name').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const telegram = document.getElementById('telegram').value.trim();
+
+    if (!name) {
+      document.getElementById('nameErr').classList.add('show');
+      document.getElementById('name').classList.add('error');
+      ok = false;
+    } else {
+      document.getElementById('nameErr').classList.remove('show');
+      document.getElementById('name').classList.remove('error');
+    }
+
+    if (!phone) {
+      document.getElementById('phoneErr').classList.add('show');
+      document.getElementById('phone').classList.add('error');
+      ok = false;
+    } else {
+      document.getElementById('phoneErr').classList.remove('show');
+      document.getElementById('phone').classList.remove('error');
+    }
+
+    if (!telegram) {
+      document.getElementById('telegramErr').classList.add('show');
+      document.getElementById('telegram').classList.add('error');
+      ok = false;
+    } else {
+      document.getElementById('telegramErr').classList.remove('show');
+      document.getElementById('telegram').classList.remove('error');
+    }
+
+    if (!selectedPayment) {
+      document.getElementById('paymentErr').classList.add('show');
+      ok = false;
+    }
+
+    if (!screenshotFile) {
+      document.getElementById('screenshotErr').classList.add('show');
+      ok = false;
+    }
+
+    return ok;
+  }
+
+  async function submitForm() {
+    if (!validate()) {
+      showToast('❌ အချက်အလက်များ ပြည့်စုံအောင် ဖြည့်ပေးပါ', 'error');
+      return;
+    }
+
+    const BOT_TOKEN = '8992764977:AAHlFgmtrpz59-BbA14DCDjnj-QaCQggTPc';
+    const CHAT_ID = '7090370846';
+
+    const name = document.getElementById('name').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const telegram = document.getElementById('telegram').value.trim();
+    const payMethod = selectedPayment === 'kbz'
+      ? '💛 KBZ Pay — 09453301116 (Daw Moe Kyi)'
+      : '🌊 Wave Pay — 09453301116 (Aung Thein Lin)';
+
+    const btn = document.getElementById('submitBtn');
+    const btnText = document.getElementById('btnText');
+    btn.classList.add('loading');
+    btnText.textContent = '⏳  တင်နေသည်...';
+
+    const message = `
+🤖 *Android Dev Course — Batch 8*
+━━━━━━━━━━━━━━━━━━━━
+👤 *Name:* ${name}
+📱 *Phone:* ${phone}
+✈️ *Telegram:* ${telegram}
+━━━━━━━━━━━━━━━━━━━━
+💳 *Payment Method:* ${payMethod}
+📸 *Screenshot:* မြူနောက် ပုံပါ
+━━━━━━━━━━━━━━━━━━━━
+📅 *Date:* ${new Date().toLocaleString('my-MM', { timeZone: 'Asia/Rangoon' })}
+    `.trim();
+
+    try {
+      // Convert image to base64 for caption approach
+      const reader = new FileReader();
+      reader.onload = async function(ev) {
+        const base64 = ev.target.result.split(',')[1];
+        const mimeType = screenshotFile.type;
+
+        // Send photo with caption
+        const formData = new FormData();
+        formData.append('chat_id', CHAT_ID);
+        formData.append('photo', screenshotFile, screenshotFile.name);
+        formData.append('caption', message);
+        formData.append('parse_mode', 'Markdown');
+
+        const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await response.json();
+
+        if (result.ok) {
+          // Show success
+          document.getElementById('formCard').querySelector('.section-label').style.display = 'none';
+          // Hide all form elements
+          const inputs = document.getElementById('formCard').querySelectorAll('.form-group, .payment-section, .divider, #submitBtn');
+          inputs.forEach(el => el.style.display = 'none');
+          document.querySelectorAll('.section-label').forEach(el => el.style.display = 'none');
+          document.getElementById('successScreen').style.display = 'block';
+          showToast('✅ အောင်မြင်စွာ တင်ပြပြီးပါပြီ', 'success');
+        } else {
+          throw new Error(result.description || 'Telegram error');
+        }
+      };
+      reader.readAsDataURL(screenshotFile);
+
+    } catch (err) {
+      btn.classList.remove('loading');
+      btnText.textContent = '📤   လျှောက်လွှာတင်မည်';
+      showToast('❌ တင်မရပါ။ နောက်မှ ထပ်စမ်းကြည့်ပါ', 'error');
+      console.error(err);
+    }
+  }
+
+  // Input clear error on type
+  ['name','phone','telegram'].forEach(id => {
+    document.getElementById(id).addEventListener('input', function() {
+      this.classList.remove('error');
+      document.getElementById(id+'Err').classList.remove('show');
+    });
+  });
+</script>
+</body>
+</html>
